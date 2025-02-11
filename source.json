@@ -1,0 +1,308 @@
+[
+    {
+        "url": "https://www.mizuho-sc.com/market/report.html",
+        "ext": "pdf",
+        "interval_days": 1,
+        "subfolder": "みずほ証券",
+        "custom": {
+            "type": "link_parse",
+            "targets": [
+                {
+                    "filename": "{YYMMDD}_global_market_digest.pdf",
+                    "value": "global_market_digest.pdf",
+                    "ext": "pdf",
+                    "unique": "text",
+                    "type": "load",
+                    "interval_days": 1
+                },
+                {
+                    "filename": "technical_{YYMMDD}.pdf",
+                    "value": "technical.pdf",
+                    "ext": "pdf",
+                    "unique": "text",
+                    "type": "load",
+                    "interval_days": 1
+                },
+                {
+                    "filename": "{filename}",
+                    "value": ".*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                }
+            ]
+        }
+    },
+    {
+        "url": "https://www.sonyfg.co.jp/ja/market_report/report.html",
+        "ext": "html",
+        "interval_days": 1,
+        "subfolder": "SonyFinance",
+        "custom": {
+            "type": "link_parse",
+            "targets": [
+                {
+                    "filename": "d_{YYMMDD}_01.pdf",
+                    "value": "/ja/market_report/daily/.*html",
+                    "ext": "html",
+                    "unique": "segment",
+                    "type": "load_rep",
+                    "interval_days": 1
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/ja/market_report/pdf/w_.*pdf",
+                    "unique": "segment",
+                    "ext": "pdf",
+                    "type": "load",
+                    "interval_days": 7
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/ja/market_report/pdf/m_.*pdf",
+                    "unique": "segment",
+                    "ext":"pdf",
+                    "type": "load",
+                    "interval_days": 30
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/ja/market_report/pdf/g_.*pdf",
+                    "unique": "segment",
+                    "ext":"pdf",
+                    "type": "load",
+                    "interval_days": 15
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/ja/market_report/pdf/sp_.*pdf",
+                    "unique": "segment",
+                    "ext":"pdf",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename":"{filename}",
+                    "value": "/ja/market_report/pdf/kkm_.*pdf",
+                    "unique":"segment",
+                    "ext":"pdf",
+                    "type":"load",
+                    "interval_days": null
+                },
+                {
+                    "filename":"{filename}",
+                    "value": "/ja/market_report/pdf/k_.*pdf",
+                    "unique":"segment",
+                    "ext":"pdf",
+                    "type":"load",
+                    "interval_days": 30
+                },
+                {
+                    "filename":"{filename}",
+                    "value": "/ja/market_report/pdf/q_.*pdf",
+                    "unique":"segment",
+                    "ext":"pdf",
+                    "type":"load",
+                    "interval_days": 90
+                }
+            ]
+        }
+    },
+    {
+        "url": "https://www.bk.mufg.jp/report/whatsnew/index.html",
+        "ext": "html",
+        "interval_days": 1,
+        "subfolder": "MUFG",
+        "custom": {
+            "type": "link_parse",
+            "targets": [
+
+                {
+                    "filename": "{basefilename}_{YYYYMMDD}.png",
+                    "value": "gmrweekly.pdf",
+                    "ext": "pdf",
+                    "unique": "text",
+                    "type": "load",
+                    "interval_days": 7
+                },
+                {
+                    "filename": "{basefilename}_{YYYYMM}.pdf",
+                    "value": "gmrMonthly.pdf",
+                    "ext": "pdf",
+                    "unique": "text",
+                    "type": "load",
+                    "interval_days": 30
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/whatsnew/.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": 1
+                }
+            ]
+        }
+    },
+    {
+        "url": "https://www.am.mufg.jp/report/",
+        "ext": "html",
+        "interval_days": 1,
+        "subfolder": "MUFGアセットマネジメント",
+        "custom": {
+            "type": "link_parse",
+            "targets": [
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/daily.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": 1
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/special.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/senryaku.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/report.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/reit.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/monthly.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/gmo.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/column.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/chart.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{filename}",
+                    "value": "/report/.*/.*_weekly\\.pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": null
+                },
+                {
+                    "filename": "{basefilename}_{YYMMDD}.pdf",
+                    "value": "/report/.*/.*pdf",
+                    "ext": "pdf",
+                    "unique": "segment",
+                    "type": "load",
+                    "interval_days": 1
+                }
+            ]
+        }
+    },
+    {
+        "url": "https://www.smbctb.co.jp/rates/daily_reports.html",
+        "ext": "html",
+        "filename": "daily_{YYYYMMDD}.pdf",
+        "interval_days": 1,
+        "subfolder": "SMBC",
+        "unique": "checksum",
+        "type": "goto_load",
+        "custom": null
+    },
+    {
+        "url": "https://www.smbctb.co.jp/rates_reports/pdf/weekly.pdf",
+        "filename": "weekly_{YYMMDD}.pdf",
+        "ext": "pdf",
+        "interval_days": 7,
+        "subfolder": "SMBC",
+        "unique": "checksum",
+        "type": "load",
+        "custom": null
+    },
+    {
+        
+        "url": "https://www.smbctb.co.jp/rates_reports/pdf/global_research_monthly.pdf",
+        "filename": "global_research_monthly_{YYMM}.pdf",
+        "ext": "pdf",
+        "interval_days": 30,
+        "subfolder": "SMBC",
+        "unique": "checksum",
+        "type": "load",
+        "custom": null
+    },
+    {
+        "url": "https://min-fx.jp/market/report/",
+        "filename": "daily_report_{YYMMDD}.pdf",
+        "ext": "html",
+        "interval_days": 1,
+        "subfolder": "みんなのFX",
+        "unique": "checksum",
+        "type": "goto_load",
+        "custom": null
+    },
+    {
+        "url": "https://www.edwardjones.com/us-en/market-news-insights/stock-market-news/daily-market-recap",
+        "filename": "daily_{YYYYMMDD}.pdf",
+        "ext": "html",
+        "interval_days": 1,
+        "subfolder": "Edward",
+        "unique": "checksum",
+        "type": "goto_load",
+        "custom": null
+    },
+    {
+        "url": "https://www.edwardjones.com/us-en/market-news-insights/stock-market-news/stock-market-weekly-update",
+        "filename": "weekly_{YYMMDD}.pdf",
+        "ext": "html",
+        "interval_days": 7,
+        "subfolder": "Edward",
+        "unique": "checksum",
+        "type": "goto_load",
+        "custom": null
+    }
+]
