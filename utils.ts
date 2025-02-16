@@ -5,6 +5,8 @@ const puppeteer = require('puppeteer');
 
 const { parse } = require('url');
 
+const service = require('./service.ts');
+
 function filterLinks(links, regexPattern) {
     //ex: const regex = /w_.*\.pdf/;
     const regex = new RegExp(regexPattern); 
@@ -21,9 +23,13 @@ function saveFile(path, data) {
     });
 }
 
-async function savePDFWithGoto(path, pageUrl, checksumFile=null, fileSize="A4") {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+async function savePDFWithGoto(path, pageUrl, checksumFile=null, page=null, fileSize="A4") {
+
+    let browser = null;
+    if(page == null){
+        browser = await puppeteer.launch();
+        page = await browser.newPage();
+    }
 
     try{
         // loading images
@@ -46,7 +52,8 @@ async function savePDFWithGoto(path, pageUrl, checksumFile=null, fileSize="A4") 
         console.log(err);
         return false;
     }finally{
-       await browser.close();
+        if(browser != null)
+            await browser.close();
     }
 }
 
@@ -108,6 +115,89 @@ async function saveHTMLasPDF(path, html, pageUrl=null, fileSize="A4")  {
     }
 }
 
+async function saveDialogFromPage(filename, clickElement, modalElement, txtElements, page) {
+    return new Promise(async (resolve, reject) => {
+        try{
+            await page.waitForSelector(clickElement, { visible: true });
+            await page.click(clickElement);
+
+            // wait for modal dialog
+            await page.waitForSelector(modalElement, { visible: true });
+
+            // get text content
+            const textContent = await page.evaluate((modalElement, txtElements) => {
+                const modal = document.querySelector(modalElement);
+                if (!modal) return null;
+
+                let textArray = [];
+                txtElements.split(',').forEach(txtElement => {
+                    if(!txtElement) return;
+                    if(txtElement.startsWith(' ')) txtElement = txtElement.slice(1);
+                    if(txtElement.endsWith(' ')) txtElement = txtElement.slice(0, -1);
+                    
+                    if(txtElement == "p"){
+                        let pTexts = Array.from(modal.querySelectorAll('p')).map(p => p.textContent.trim());
+                        textArray.push(...pTexts);
+                        return;
+                    }else{
+                        let texts = modal.querySelector(txtElement)?.textContent.trim() || '';
+                        if(texts)
+                            textArray.push(texts);
+                    }
+                });
+
+                return textArray.join('\n');
+            }, modalElement, txtElements);
+
+            if(textContent){
+                fs.writeFileSync(filename, textContent, 'utf-8');
+                resolve(true);
+            }else{
+                console.log(`no text content found: ${filename}`);
+                resolve(false);
+            }
+        }catch(err){
+            console.log(err);
+            reject(err);
+        }
+    });
+}
+
+async function extractElementsFromPage(page, selector) {
+    try{
+      const elements = await page.evaluate((selector) => {
+        return Array.from(document.querySelectorAll(selector)).map(element => {
+            if(element.tagName == "A"){
+                return element.href;
+            }else if (element.tagName == "IMG" || element.tagName == "VIDEO" || element.tagName == "AUDIO"){
+                return element.src;
+            }else if(element.tagName == "DIV"){
+                return element.textContent;
+            }else if(element.tagName == "SPAN"){
+                return element.textContent;
+            }else if(element.tagName == "INPUT"){
+                return element.value;
+            }else if(element.tagName == "SELECT"){
+                return element.options[element.selectedIndex].text;
+            }else if(element.tagName == "TEXTAREA"){
+                return element.value;
+            }else if(element.tagName == "TABLE"){
+                return element.outerHTML;
+            }else if (element.tagName == "UL" || element.tagName == "OL"){
+                return Array.from(element.children).join("\n");
+            }else if(element.tagName == "LI"){
+                return element.textContent;
+            }
+        }, selector);
+      }, selector);    
+  
+      return elements;
+    } catch (error) {
+      console.error(error.message);
+      return [];
+    }
+}
+
 function loadFile(path, asString=true) {
     try {
         const bufferData = fs.readFileSync(path, "utf-8").trim();
@@ -137,6 +227,7 @@ function loadJsonFile(path) {
 }
 
 function extructBracedText(str) {
+    if(!str) return [];
     const matches = str.match(/\{([^{}]+)\}/g);
     return matches ? matches.map(m => m.slice(1, -1)) : [];
 }
@@ -233,7 +324,117 @@ function handleChecksum(checksumFile, html, updateFile=true){
     }
 }
 
+/**
+ * return keyfile if the link contains updates.
+ * @param unique_by str
+ * @param save_dir str
+ * @param link {str: text, str: url}
+ * @returns string
+ */
+function check_update_by(unique_by, save_dir, link, checksum_path, page=null){
+    if(unique_by == "segment") {
+        if (fs.existsSync(save_dir)) {
+            // console.log(`The same file already exists: ${link.href}`);
+            return null;
+        }
+        return save_dir;
+    }else if(unique_by == "text") {
+        const key_file = uniqyeKeyFilePath(link, checksum_path);
+        if (fs.existsSync(key_file)) {
+            const newValue = link.text;
+            const oldValue = loadFile(key_file);
+            if(newValue == oldValue){
+                return null;
+            }else{
+                return key_file;
+            }
+        }
+        return key_file;
+    }else if(unique_by == "checksum"){
+        const key_file = uniqyeKeyFilePath(link, checksum_path);
+        return key_file;
+    }else if(typeof unique_by == "object"){
+        const type = unique_by["type"];
+        if(type == "selector"){
+            if(page == null){
+                console.log("page is required for selector type of unique_by");
+                return null;
+            }
+            const selector = unique_by["selector"];
+            const key_file = uniqyeKeyFilePath(link, checksum_path);
+            if (fs.existsSync(key_file)) {
+                const newValues = extractElementsFromPage(page, selector);
+                if(newValues && newValues.length > 0){
+                    const newValue = newValues[0];
+                    const oldValue = loadFile(key_file);
+                    if(newValue == oldValue){
+                        return null;
+                    }else{
+                        return key_file;
+                    }
+                }else{
+                    return key_file;
+                }
+            }
+            return key_file;
+        }
+    }
+    console.log(`undefined unique method may be specified: ${unique_by}`);
+    return null;
+  }
+  
+  function update_unique_file(unique_by, uniqueKeyFile, url){
+    if(unique_by == "text") {
+        saveFile(uniqueKeyFile, url.text);
+    }
+  }
+  
+  function updateSourceItem(item, linkURL, subfolder){
+    let updatedItem = { ...item };
+    updatedItem["subfolder"] = subfolder;
+    let filename = updatedItem["filename"];
+    const placeholders = extructBracedText(filename);
+    if(placeholders.length > 0){
+        placeholders.forEach(ph => {
+            if(ph.includes("YY")){
+                filename = replaceDateStr(filename);
+            }else if(ph == "filename"){
+                const segment = getLastPathSegment(linkURL);
+                if(segment != ""){
+                    filename = filename.replace("{filename}", segment);
+                }else{
+                    console.log(`no segment found: ${linkURL}`);
+                }
+            }else if(ph == "basefilename"){
+                const segment = getLastPathSegment(linkURL);
+                if(segment != ""){
+                    let filename_portions = segment.split(".");
+                    if(filename_portions.length == 2){
+                        filename = filename.replace("{basefilename}", filename_portions[0]);
+                    }else if(filename_portions.length > 2){
+                        let basename = filename_portions[0];
+                        for(let i = 1; i < filename_portions.length - 1; i++){
+                            basename += filename_portions[i];
+                        }
+                        filename = filename.replace("{basefilename}", basename);
+                    }else{
+                        console.log(`no segment found: ${linkURL}`);
+                    }
+                }else{
+                    console.log(`no segment found: ${linkURL}`);
+                }
+            }else{
+                console.log(`unkown placeholder: ${ph}`);
+            }
+        });
+    }
+  
+    updatedItem["filename"] = filename;
+    return updatedItem;
+  }
+
 module.exports = {
     loadFile, loadJsonFile, filterLinks, saveFile, saveHTMLasPDF, savePDFWithGoto, extructBracedText,
-    replaceDateStr, getLastPathSegment, uniqyeKeyFilePath, handleChecksum
+    extractElementsFromPage, updateSourceItem, check_update_by, update_unique_file, getHash,
+    replaceDateStr, getLastPathSegment, uniqyeKeyFilePath, handleChecksum, saveDialogFromPage
 }

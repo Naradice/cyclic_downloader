@@ -4,7 +4,7 @@
         "ext": "pdf",
         "interval_days": 1,
         "subfolder": "みずほ証券",
-        "custom": {
+        "custom": [{
             "type": "link_parse",
             "targets": [
                 {
@@ -32,18 +32,18 @@
                     "interval_days": null
                 }
             ]
-        }
+        }]
     },
     {
         "url": "https://www.sonyfg.co.jp/ja/market_report/report.html",
         "ext": "html",
         "interval_days": 1,
         "subfolder": "SonyFinance",
-        "custom": {
+        "custom": [{
             "type": "link_parse",
             "targets": [
                 {
-                    "filename": "d_{YYMMDD}_01.pdf",
+                    "filename": "d_{YYMMDD}",
                     "value": "/ja/market_report/daily/.*html",
                     "ext": "html",
                     "unique": "segment",
@@ -107,19 +107,19 @@
                     "interval_days": 90
                 }
             ]
-        }
+        }]
     },
     {
         "url": "https://www.bk.mufg.jp/report/whatsnew/index.html",
         "ext": "html",
         "interval_days": 1,
         "subfolder": "MUFG",
-        "custom": {
+        "custom": [{
             "type": "link_parse",
             "targets": [
 
                 {
-                    "filename": "{basefilename}_{YYYYMMDD}.png",
+                    "filename": "{basefilename}_{YYYYMMDD}.pdf",
                     "value": "gmrweekly.pdf",
                     "ext": "pdf",
                     "unique": "text",
@@ -143,14 +143,14 @@
                     "interval_days": 1
                 }
             ]
-        }
+        }]
     },
     {
         "url": "https://www.am.mufg.jp/report/",
         "ext": "html",
         "interval_days": 1,
         "subfolder": "MUFGアセットマネジメント",
-        "custom": {
+        "custom": [{
             "type": "link_parse",
             "targets": [
                 {
@@ -242,12 +242,12 @@
                     "interval_days": 1
                 }
             ]
-        }
+        }]
     },
     {
         "url": "https://www.smbctb.co.jp/rates/daily_reports.html",
         "ext": "html",
-        "filename": "daily_{YYYYMMDD}.pdf",
+        "filename": "daily_{YYYYMMDD}",
         "interval_days": 1,
         "subfolder": "SMBC",
         "unique": "checksum",
