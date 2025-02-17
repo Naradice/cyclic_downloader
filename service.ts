@@ -163,7 +163,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                                   if(customAttr){
                                       tgtItem["url"] = link.href;
                                       // do not provide page instance as the current page instance may be used
-                                      await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, subfolder_path);
+                                      await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, save_dir, subfolder_path);
                                   }else{
                                       await saveToFile(tgtItem, link, lastCheckDates, operation_page, checksum_path, save_dir);
                                       handledUrl.push(link.href);
@@ -235,7 +235,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                           const tgtItem = utils.updateSourceItem(tgt, value, subfolder_path);
                           if(customAttr){
                               await operation_page.goto(value, { waitUntil: 'networkidle0' });
-                              await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, subfolder_path, operation_page);
+                              await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, save_dir, subfolder_path, operation_page);
                           }else{
                               const link = {text: "", href: value};
                               tgtItem["subfolder"] = subfolder_path;
