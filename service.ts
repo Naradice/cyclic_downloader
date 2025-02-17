@@ -283,7 +283,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
       let checksum_required = false;
       if(uniqueKeyFile == null){
           if(unique_by == "checksum"){
-              uniqueKeyFile = utils.uniqyeKeyFilePath(link, CHECKSUM_DIR);
+              uniqueKeyFile = utils.uniqyeKeyFilePath(link, checksum_path);
               checksum_required = true;
           }else{
               uniqueKeyFile = utils.check_update_by(unique_by, save_dir, link, checksum_path);
@@ -308,7 +308,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                       if(data){
                           if(checksum_required){
                               if(!utils.handleChecksum(data)){
-                                  let result = saveFile(save_dir, data);
+                                  let result = utils.saveFile(save_dir, data);
                                   if(result){
                                       lastCheckDates[url] = today;
                                       console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
@@ -317,7 +317,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                                   resolve(false);
                               }
                           }else{
-                              let result = saveFile(save_dir, data);
+                              let result = utils.saveFile(save_dir, data);
                               if(result){
                                   utils.update_unique_file(unique_by, uniqueKeyFile, link);
                                   lastCheckDates[url] = today;
@@ -380,7 +380,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                       if(data){
                           if(checksum_required){
                               if(!utils.handleChecksum(checksum_path, data)){
-                                  let result = saveFile(save_dir, data);
+                                  let result = utils.saveFile(save_dir, data);
                                   if(result){
                                       lastCheckDates[url] = today;
                                       console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
@@ -389,7 +389,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                                   resolve(false);
                               }
                           }else{
-                              let result = saveFile(save_dir, data);
+                              let result = utils.saveFile(save_dir, data);
                               if(result){
                                   utils.update_unique_file(unique_by, uniqueKeyFile, link);
                                   lastCheckDates[url] = today;

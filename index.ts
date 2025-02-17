@@ -5,7 +5,7 @@ const service = require("./service.ts");
 const utils = require("./utils.ts");
 
 const URLS_FILE = './source.json';
-const SAVE_DIR = 'L:/data/finance_test';
+const SAVE_DIR = 'L:/data/finance';
 const CHECKSUM_DIR = `${SAVE_DIR}/checksums`;
 const LAST_CHECK_FILE = `${SAVE_DIR}/last_check_dates.json`;
 
