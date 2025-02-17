@@ -20,13 +20,24 @@ const DIALOG = "save_dialog"; // After dialog is shown, save the dialog content
 const ELEMENT_PARSE = "element_parse"; // parse elements from html
 
 async function fetchArrayBuffer(url){
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
+    let filename = null;
+
+    const headResponse = await axios.head(url);
+    // Obtain filename from Content-Disposition
+    const contentDisposition = headResponse.headers['content-disposition'];
+    if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match) {
+            filename = match[1];
+        }
+    }
     axios({
         method: "get",
         url: url,
         responseType: 'arraybuffer'})
     .then((response) => {
-        resolve(response.data);
+        resolve({filename, data: response.data});
     }).catch((err) =>{
         reject(err);
     });
@@ -304,27 +315,31 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
       if(uniqueKeyFile){
           if(type == LOAD){
               if(ext == "pdf"){
-                  fetchArrayBuffer(url).then(data =>{
+                  fetchArrayBuffer(url).then(({filename, data}) => {
                       if(data){
-                          if(checksum_required){
-                              if(!utils.handleChecksum(data)){
-                                  let result = utils.saveFile(save_dir, data);
-                                  if(result){
-                                      lastCheckDates[url] = today;
-                                      console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
-                                      resolve(true);
-                                  }
-                                  resolve(false);
-                              }
-                          }else{
-                              let result = utils.saveFile(save_dir, data);
-                              if(result){
-                                  utils.update_unique_file(unique_by, uniqueKeyFile, link);
-                                  lastCheckDates[url] = today;
-                                  console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
-                                  resolve(true);
-                              }
-                              resolve(false);
+                        if(filename){
+                           let dir = path.dirname(save_dir);
+                           save_dir = path.join(dir, filename);
+                        }
+                        if(checksum_required){
+                            if(!utils.handleChecksum(data)){
+                                let result = utils.saveFile(save_dir, data);
+                                if(result){
+                                    lastCheckDates[url] = today;
+                                    console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
+                                    resolve(true);
+                                }
+                                resolve(false);
+                            }
+                        }else{
+                            let result = utils.saveFile(save_dir, data);
+                            if(result){
+                                utils.update_unique_file(unique_by, uniqueKeyFile, link);
+                                lastCheckDates[url] = today;
+                                console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
+                                resolve(true);
+                            }
+                            resolve(false);
                           }
                       }else{
                           console.log(`failed to get content: ${url}`);
@@ -376,28 +391,32 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                       });    
                 }
               }else{
-                  fetchArrayBuffer(url).then(data => {
-                      if(data){
-                          if(checksum_required){
-                              if(!utils.handleChecksum(checksum_path, data)){
-                                  let result = utils.saveFile(save_dir, data);
-                                  if(result){
-                                      lastCheckDates[url] = today;
-                                      console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
-                                      resolve(true);
-                                  }
-                                  resolve(false);
-                              }
-                          }else{
-                              let result = utils.saveFile(save_dir, data);
-                              if(result){
-                                  utils.update_unique_file(unique_by, uniqueKeyFile, link);
-                                  lastCheckDates[url] = today;
-                                  console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
-                                  resolve(true);
-                              }
-                              resolve(false);
-                          }
+                  fetchArrayBuffer(url).then(({filename, data}) => {
+                        if(data){
+                            if(filename){
+                                let dir = path.dirname(save_dir);
+                                save_dir = path.join(dir, filename);
+                            }
+                            if(checksum_required){
+                                if(!utils.handleChecksum(checksum_path, data)){
+                                    let result = utils.saveFile(save_dir, data);
+                                    if(result){
+                                        lastCheckDates[url] = today;
+                                        console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
+                                        resolve(true);
+                                    }
+                                    resolve(false);
+                                }
+                            }else{
+                                let result = utils.saveFile(save_dir, data);
+                                if(result){
+                                    utils.update_unique_file(unique_by, uniqueKeyFile, link);
+                                    lastCheckDates[url] = today;
+                                    console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
+                                    resolve(true);
+                                }
+                                resolve(false);
+                            }
                       }else{
                           console.log(`failed to get content: ${url}`);
                           resolve(false);
@@ -498,11 +517,13 @@ async function savePage(outputDir, page) {
 
             // download the resource
             const response = await fetchArrayBuffer(resourceUrl);
-            fs.writeFileSync(localPath, response);
+            if(response){
+                fs.writeFileSync(localPath, response.data);
 
-            // replace the resource url with the local path
-            html = html.replace(new RegExp(resourceUrl, "g"), resourceFilename);
-            html = html.replace(new RegExp(pathName, "g"), resourceFilename);
+                // replace the resource url with the local path
+                html = html.replace(new RegExp(resourceUrl, "g"), resourceFilename);
+                html = html.replace(new RegExp(pathName, "g"), resourceFilename);
+            }
         } catch (err) {
             console.error(`Failed to download ${resourceUrl}:`, err.message);
         }
