@@ -63,7 +63,7 @@ async function saveHTMLasPDF(path, html, pageUrl=null, fileSize="A4")  {
     try{
         if(pageUrl != null) {
             const baseURL = new URL('.', pageUrl).href;
-            await page.setContent(html, { waitUntil: 'load', base: baseURL});
+            await page.setContent(html, { waitUntil: 'load', base: baseURL, timeout: 300000});
             await page.evaluate((baseURL) => {
                 document.querySelectorAll('img').forEach(img => {
                     console.log(img);
