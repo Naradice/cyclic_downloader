@@ -25,7 +25,11 @@ async function checkAllUrls() {
     let lastCheckDates = loadLastCheckDates();
 
     for( const source of sourceList){
-        await service.checkSpecificSource(browser, source, lastCheckDates, CHECKSUM_DIR, SAVE_DIR);
+        try {
+            await service.checkSpecificSource(browser, source, lastCheckDates, CHECKSUM_DIR, SAVE_DIR);
+        } catch (error) {
+            console.error(`Error processing source ${source.name}:`, error);
+        }
     }
     console.log("updating last check dates");
     fs.writeFileSync(LAST_CHECK_FILE, JSON.stringify(lastCheckDates, null, 2), 'utf-8');
@@ -34,12 +38,12 @@ async function checkAllUrls() {
 }
 
 checkAllUrls().then(() => { console.log("done"); });
-// const sourceList = utils.loadJsonFile('./test_source_html.json');
+// const sourceList = utils.loadJsonFile('./test_source.json');
 // puppeteer.launch(
-// {
-//     headless: false,
-//     args: ['--no-sandbox', '--disable-setuid-sandbox']
-// }
+// // {
+// //     headless: false,
+// //     args: ['--no-sandbox', '--disable-setuid-sandbox']
+// // }
 // ).then(async browser => {
 //     await service.checkSpecificSource(browser, sourceList, {}, CHECKSUM_DIR, SAVE_DIR);
 //     await browser.close();

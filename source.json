@@ -43,7 +43,7 @@
             "type": "link_parse",
             "targets": [
                 {
-                    "filename": "d_{YYMMDD}",
+                    "filename": "d_{YYMMDD}.pdf",
                     "value": "/ja/market_report/daily/.*html",
                     "ext": "html",
                     "unique": "segment",
@@ -247,7 +247,7 @@
     {
         "url": "https://www.smbctb.co.jp/rates/daily_reports.html",
         "ext": "html",
-        "filename": "daily_{YYYYMMDD}",
+        "filename": "daily_{YYYYMMDD}.pdf",
         "interval_days": 1,
         "subfolder": "SMBC",
         "unique": "checksum",
@@ -301,6 +301,65 @@
         "ext": "html",
         "interval_days": 7,
         "subfolder": "Edward",
+        "unique": "checksum",
+        "type": "goto_load",
+        "custom": null
+    },
+    {
+        "url": "https://www.schwab.com/learn/schwab-market-update",
+        "ext": "html",
+        "interval_days": 1,
+        "subfolder": "Schwab",
+        "custom": [{
+            "type": "element_parse",
+            "targets": [
+                {
+                    "selector":"div.card-col-wrapper div.bcn-card__main a",
+                    "value": ".*schwab-market-update-podcast",
+                    "ext": "html",
+                    "unique": {
+                        "type": "selector",
+                        "selector": "div.card-col-wrapper div.bcn-card__main div.bcn-card__meta span.bcn-card__meta-field"
+                    },
+                    "custom": [
+                        {
+                            "type": "save_dialog",
+                            "targets": [
+                                {
+                                    "dialog": "button.podcast_Podcast_transcriptButton__rHpsI",
+                                    "element": "dialog.Modal",
+                                    "filename": "daily_transcript_{YYYYMMDD}.txt",
+                                    "value": "h,p",
+                                    "ext": "txt",
+                                    "unique": "checksum",
+                                    "type": "save"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "element_parse",
+                            "targets": [
+                                {
+                                    "selector": "audio",
+                                    "value": ".*\\.mp3",
+                                    "ext": "mp3",
+                                    "filename": "{filename}",
+                                    "unique": "segment",
+                                    "type": "load"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }]
+    },
+    {
+        "url": "https://www.schwab.com/learn/story/stock-market-update-open",
+        "filename": "daily_opning_{YYYYMMDD}.pdf",
+        "ext": "html",
+        "interval_days": 1,
+        "subfolder": "Schwab",
         "unique": "checksum",
         "type": "goto_load",
         "custom": null

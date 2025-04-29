@@ -63,11 +63,12 @@ async function fetchContentWithGoto(url, page=null) {
   if(page == null){
     const browser = await puppeteer.launch();
     const page = await browser.newPage();  
+
     close_broser = true;
   }
 
   try {
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 300000 });
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 600000 });
     const html = await page.content();
     return html;
 
@@ -98,7 +99,7 @@ async function extractLinksWithLoading(url, page=null) {
     page = await browser.newPage();  
   } 
   try{
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 300000});
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 600000});
     // await page.waitForSelector('.class_name');
     const links = await page.evaluate(() => {
       return Array.from(document.querySelectorAll('a')).map(link => ({
@@ -139,7 +140,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
       const link = {text: "", href: url};
       if (page == null){
           page = await initializePage(browser);
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 300000 });
+          await page.goto(url, { waitUntil: 'networkidle0', timeout: 600000 });
       }
       await saveToFile(tgtItem, link, lastCheckDates, page, checksum_path, save_dir);
       return lastCheckDates;
@@ -190,7 +191,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                   let operation_page = null;
                   if(page == null){
                       operation_page = await initializePage(browser);
-                      await operation_page.goto(url, { waitUntil: 'networkidle0', timeout: 300000 });
+                      await operation_page.goto(url, { waitUntil: 'networkidle0', timeout: 600000 });
                   }else{
                       operation_page = page;
                   }
@@ -209,7 +210,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                   let operation_page = null;
                   if(page == null){
                       operation_page = await initializePage(browser);
-                      await operation_page.goto(url, { waitUntil: 'networkidle0', timeout: 300000 });
+                      await operation_page.goto(url, { waitUntil: 'networkidle0', timeout: 600000 });
                   }else{
                       operation_page = page;
                   }
@@ -244,7 +245,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                           tgt["url"] = value;
                           const tgtItem = utils.updateSourceItem(tgt, value, subfolder_path);
                           if(customAttr){
-                              await operation_page.goto(value, { waitUntil: 'networkidle0', timeout: 300000 });
+                              await operation_page.goto(value, { waitUntil: 'networkidle0', timeout: 600000 });
                               await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, save_dir, subfolder_path, operation_page);
                           }else{
                               const link = {text: "", href: value};
@@ -347,7 +348,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                   });
               }else if(ext == "html"){
                 const save_ext = path.extname(save_dir);
-                if(ext_ext == "pdf"){
+                if(save_ext == "pdf"){
                   fetchContent(url).then(data => {
                       if(data){
                           if(checksum_required){

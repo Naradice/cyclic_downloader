@@ -33,7 +33,7 @@ async function savePDFWithGoto(path, pageUrl, checksumFile=null, page=null, file
 
     try{
         // loading images
-        await page.goto(pageUrl, { waitUntil: 'networkidle2', timeout: 0 })
+        await page.goto(pageUrl, { waitUntil: 'networkidle2', timeout: 600000 })
 
         if(checksumFile != null){
             const html = await page.content();
@@ -63,7 +63,7 @@ async function saveHTMLasPDF(path, html, pageUrl=null, fileSize="A4")  {
     try{
         if(pageUrl != null) {
             const baseURL = new URL('.', pageUrl).href;
-            await page.setContent(html, { waitUntil: 'load', base: baseURL, timeout: 300000});
+            await page.setContent(html, { waitUntil: 'load', base: baseURL, timeout: 600000});
             await page.evaluate((baseURL) => {
                 document.querySelectorAll('img').forEach(img => {
                     console.log(img);
@@ -118,11 +118,11 @@ async function saveHTMLasPDF(path, html, pageUrl=null, fileSize="A4")  {
 async function saveDialogFromPage(filename, clickElement, modalElement, txtElements, page) {
     return new Promise(async (resolve, reject) => {
         try{
-            await page.waitForSelector(clickElement, { visible: true });
+            await page.waitForSelector(clickElement, { visible: true, timeout: 600000 });
             await page.click(clickElement);
 
             // wait for modal dialog
-            await page.waitForSelector(modalElement, { visible: true });
+            await page.waitForSelector(modalElement, { visible: true, timeout: 600000 });
 
             // get text content
             const textContent = await page.evaluate((modalElement, txtElements) => {
