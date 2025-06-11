@@ -1,5 +1,6 @@
 const path = require("path");
 const fs = require('fs');
+const cron = require('node-cron');
 const puppeteer = require('puppeteer');
 const service = require("./service.ts");
 const utils = require("./utils.ts");
@@ -37,7 +38,10 @@ async function checkAllUrls() {
     return;
 }
 
-checkAllUrls().then(() => { console.log("done"); });
+// 毎週月曜〜金曜の20:00に実行
+cron.schedule('0 20 * * 1-5', () => {
+  checkAllUrls().then(() => { console.log("done"); });
+});
 // const sourceList = utils.loadJsonFile('./test_source.json');
 // puppeteer.launch(
 // // {
