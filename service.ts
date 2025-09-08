@@ -140,7 +140,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
       const link = {text: "", href: url};
       if (page == null){
           page = await initializePage(browser);
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 600000 });
+          await page.goto(url, { waitUntil: 'networkidle2', timeout: 600000 });
       }
       await saveToFile(tgtItem, link, lastCheckDates, page, checksum_path, save_dir);
       return lastCheckDates;
@@ -152,40 +152,39 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
           const tgts = customAttr["targets"];
 
           if(customType == PARSE) {
-              let operation_page = null;
-              if(page == null){
-                  operation_page = await initializePage(browser);
-              }else{
-                  operation_page = page;
-              }
-              extractLinksWithLoading(url, operation_page).then(async (links) => {
-                  let handledUrl = [];
-                  // handle targets subsequently with the same operation_page instance
-                  for(const tgt of tgts){
-                      const value = tgt["value"];
-                      const tgtLinks = utils.filterLinks(links, value);
-                      if(tgtLinks.length == 0){
-                          console.log(`no link found: ${value}`);
-                      }else if (tgtLinks.length > 0) {
-                          await Promise.all(tgtLinks.map(async link => {
-                              if(!handledUrl.includes(link.href)){
-                                  let tgtItem = utils.updateSourceItem(tgt, link.href, subfolder_path);
-                                  // to avoid severe load, add await here.
-                                  const customAttr = tgtItem["custom"];
-                                  if(customAttr){
-                                      tgtItem["url"] = link.href;
-                                      // do not provide page instance as the current page instance may be used
-                                      await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, save_dir, subfolder_path);
-                                  }else{
-                                      await saveToFile(tgtItem, link, lastCheckDates, operation_page, checksum_path, save_dir);
-                                      handledUrl.push(link.href);
-                                  }
-                              }
-                          }));
-                          return lastCheckDates;
-                      }
-                  };
-              });
+            let operation_page = null;
+            if(page == null){
+                operation_page = await initializePage(browser);
+            }else{
+                operation_page = page;
+            }
+            const links = await extractLinksWithLoading(url, operation_page);
+            let handledUrl = [];
+            // handle targets subsequently with the same operation_page instance
+            for(const tgt of tgts){
+                const value = tgt["value"];
+                const tgtLinks = utils.filterLinks(links, value);
+                if(tgtLinks.length == 0){
+                    console.log(`no link found: ${value}`);
+                }else if (tgtLinks.length > 0) {
+                    await Promise.all(tgtLinks.map(async link => {
+                        if(!handledUrl.includes(link.href)){
+                            let tgtItem = utils.updateSourceItem(tgt, link.href, subfolder_path);
+                            // to avoid severe load, add await here.
+                            const customAttr = tgtItem["custom"];
+                            if(customAttr){
+                                tgtItem["url"] = link.href;
+                                // do not provide page instance as the current page instance may be used
+                                await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, save_dir, subfolder_path);
+                            }else{
+                                await saveToFile(tgtItem, link, lastCheckDates, operation_page, checksum_path, save_dir);
+                                handledUrl.push(link.href);
+                            }
+                        }
+                    }));
+                    return lastCheckDates;
+                }
+            };
           }else if(customType == DIALOG){
               await Promise.all(tgts.map(async tgt => {
                   let operation_page = null;
@@ -210,7 +209,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                   let operation_page = null;
                   if(page == null){
                       operation_page = await initializePage(browser);
-                      await operation_page.goto(url, { waitUntil: 'networkidle0', timeout: 600000 });
+                      await operation_page.goto(url, { waitUntil: 'networkidle2', timeout: 600000 });
                   }else{
                       operation_page = page;
                   }
@@ -245,7 +244,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                           tgt["url"] = value;
                           const tgtItem = utils.updateSourceItem(tgt, value, subfolder_path);
                           if(customAttr){
-                              await operation_page.goto(value, { waitUntil: 'networkidle0', timeout: 600000 });
+                              await operation_page.goto(value, { waitUntil: 'networkidle2', timeout: 600000 });
                               await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, save_dir, subfolder_path, operation_page);
                           }else{
                               const link = {text: "", href: value};
