@@ -5,7 +5,7 @@ const puppeteer = require('puppeteer');
 
 const { parse } = require('url');
 
-const service = require('./service.ts');
+const service = require('./service.js');
 
 function filterLinks(links, regexPattern) {
     //ex: const regex = /w_.*\.pdf/;

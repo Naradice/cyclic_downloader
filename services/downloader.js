@@ -1,8 +1,7 @@
-const path = require("path");
 const fs = require('fs');
 const puppeteer = require('puppeteer');
-const service = require("./service.ts");
-const utils = require("./utils.ts");
+const service = require("./service.js");
+const utils = require("./utils.js");
 
 const URLS_FILE = './source.json';
 const SAVE_DIR = 'L:/data/finance';
@@ -37,14 +36,4 @@ async function checkAllUrls() {
     return;
 }
 
-checkAllUrls().then(() => { console.log("done"); });
-// const sourceList = utils.loadJsonFile('./test_source.json');
-// puppeteer.launch(
-// // {
-// //     headless: false,
-// //     args: ['--no-sandbox', '--disable-setuid-sandbox']
-// // }
-// ).then(async browser => {
-//     await service.checkSpecificSource(browser, sourceList, {}, CHECKSUM_DIR, SAVE_DIR);
-//     await browser.close();
-// });
+module.exports = { checkAllUrls };

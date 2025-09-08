@@ -7,7 +7,7 @@ const axios = require("axios");
 const puppeteer = require('puppeteer');
 const { JSDOM } = require('jsdom');
 
-const utils = require('./utils.ts');
+const utils = require('./utils.js');
 
 // Operation Types for loading content
 const LOAD = "load"; // simply load html content
