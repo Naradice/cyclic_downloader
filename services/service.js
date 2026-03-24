@@ -140,7 +140,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
       const link = {text: "", href: url};
       if (page == null){
           page = await initializePage(browser);
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 600000 });
+          await page.goto(url, { waitUntil: 'networkidle2', timeout: 600000 });
       }
       await saveToFile(tgtItem, link, lastCheckDates, page, checksum_path, save_dir);
       return lastCheckDates;
@@ -210,7 +210,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                   let operation_page = null;
                   if(page == null){
                       operation_page = await initializePage(browser);
-                      await operation_page.goto(url, { waitUntil: 'networkidle0', timeout: 600000 });
+                      await operation_page.goto(url, { waitUntil: 'networkidle2', timeout: 600000 });
                   }else{
                       operation_page = page;
                   }
@@ -245,7 +245,7 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                           tgt["url"] = value;
                           const tgtItem = utils.updateSourceItem(tgt, value, subfolder_path);
                           if(customAttr){
-                              await operation_page.goto(value, { waitUntil: 'networkidle0', timeout: 600000 });
+                              await operation_page.goto(value, { waitUntil: 'networkidle2', timeout: 600000 });
                               await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, save_dir, subfolder_path, operation_page);
                           }else{
                               const link = {text: "", href: value};

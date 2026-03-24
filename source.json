@@ -314,12 +314,12 @@
             "type": "element_parse",
             "targets": [
                 {
-                    "selector":"div.card-col-wrapper div.bcn-card__main a",
+                    "selector":"div.layout_Layout__40jkX div.mosaic_Mosaic_slots__yy7se div.mosaic_Mosaic_slot__mMp0i a",
                     "value": ".*schwab-market-update-podcast",
                     "ext": "html",
                     "unique": {
                         "type": "selector",
-                        "selector": "div.card-col-wrapper div.bcn-card__main div.bcn-card__meta span.bcn-card__meta-field"
+                        "selector": "span.lockup_Lockup_disclosure__lFyNX"
                     },
                     "custom": [
                         {
@@ -343,7 +343,7 @@
                                     "selector": "audio",
                                     "value": ".*\\.mp3",
                                     "ext": "mp3",
-                                    "filename": "{filename}",
+                                    "filename": "{YYYYMMDD}_{filename}",
                                     "unique": "segment",
                                     "type": "load"
                                 }

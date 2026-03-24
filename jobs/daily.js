@@ -1,4 +1,3 @@
-const { parentPort } = require('worker_threads');
 const { checkAllUrls } = require('../services/downloader.js');
 
 (async () => {
@@ -14,6 +13,4 @@ const { checkAllUrls } = require('../services/downloader.js');
       console.error('❌ Error:', err);
     }
   }
-
-  parentPort.close();
 })();
