@@ -20,23 +20,21 @@ const DIALOG = "save_dialog"; // After dialog is shown, save the dialog content
 const ELEMENT_PARSE = "element_parse"; // parse elements from html
 
 async function fetchArrayBuffer(url){
-  return new Promise(async (resolve, reject) => {
-    let filename = null;
-
-    const headResponse = await axios.head(url);
-    // Obtain filename from Content-Disposition
-    const contentDisposition = headResponse.headers['content-disposition'];
-    if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?([^"]+)"?/);
-        if (match) {
-            filename = match[1];
-        }
-    }
+  return new Promise((resolve, reject) => {
     axios({
         method: "get",
         url: url,
         responseType: 'arraybuffer'})
     .then((response) => {
+        let filename = null;
+        // Obtain filename from Content-Disposition
+        const contentDisposition = response.headers['content-disposition'];
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename="?([^"]+)"?/);
+            if (match) {
+                filename = match[1];
+            }
+        }
         resolve({filename, data: response.data});
     }).catch((err) =>{
         reject(err);
