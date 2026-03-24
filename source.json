@@ -12,7 +12,7 @@
                     "value": "global_market_digest.pdf",
                     "ext": "pdf",
                     "unique": "text",
-                    "type": "load",
+                    "type": "goto_download",
                     "interval_days": 1
                 },
                 {
@@ -20,7 +20,7 @@
                     "value": "technical.pdf",
                     "ext": "pdf",
                     "unique": "text",
-                    "type": "load",
+                    "type": "goto_download",
                     "interval_days": 1
                 },
                 {
@@ -28,7 +28,7 @@
                     "value": ".*pdf",
                     "ext": "pdf",
                     "unique": "segment",
-                    "type": "load",
+                    "type": "goto_download",
                     "interval_days": null
                 }
             ]

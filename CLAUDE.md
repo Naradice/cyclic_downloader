@@ -55,6 +55,7 @@ Each entry in `source.json` describes one URL to monitor. Key fields:
 - `load` — Direct HTTP fetch (axios)
 - `goto_load` — Puppeteer navigation then save as PDF
 - `load_rep` — Fetch HTML then save as PDF with base URL rewriting (for relative images)
+- `goto_download` — Puppeteer navigation capturing raw response bytes; use when `load` is blocked (e.g. 403 from Akamai/CDN)
 
 **Custom parse types** (`custom[].type`):
 - `link_parse` — Extract all `<a>` links from the page, filter by regex, then process each matched link

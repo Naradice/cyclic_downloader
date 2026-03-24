@@ -13,18 +13,22 @@ const utils = require('./utils.js');
 const LOAD = "load"; // simply load html content
 const GOTO_LOAD = "goto_load"; // load a page with puppeteer.
 const LOAD_REPLAGE = "load_rep"; // After geeting the html, replace image url with base
+const GOTO_DOWNLOAD = "goto_download"; // download binary via puppeteer (use when axios is blocked)
 
 // Custom types
 const PARSE = "link_parse"; // if url is not fixed, parse links from html
 const DIALOG = "save_dialog"; // After dialog is shown, save the dialog content
 const ELEMENT_PARSE = "element_parse"; // parse elements from html
 
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36';
+
 async function fetchArrayBuffer(url){
   return new Promise((resolve, reject) => {
     axios({
         method: "get",
         url: url,
-        responseType: 'arraybuffer'})
+        responseType: 'arraybuffer',
+        headers: { 'User-Agent': BROWSER_UA }})
     .then((response) => {
         let filename = null;
         // Obtain filename from Content-Disposition
@@ -46,7 +50,8 @@ function fetchContent(url) {
   return new Promise((resolve, reject) => {
     axios({
       method: "get",
-      url: url
+      url: url,
+      headers: { 'User-Agent': BROWSER_UA }
     })
     .then((response) => {
         resolve(response.data);
@@ -165,21 +170,19 @@ async function checkSpecificSource(browser, source, lastCheckDates, checksum_pat
                       if(tgtLinks.length == 0){
                           console.log(`no link found: ${value}`);
                       }else if (tgtLinks.length > 0) {
-                          await Promise.all(tgtLinks.map(async link => {
+                          for(const link of tgtLinks){
                               if(!handledUrl.includes(link.href)){
                                   let tgtItem = utils.updateSourceItem(tgt, link.href, subfolder_path);
-                                  // to avoid severe load, add await here.
                                   const customAttr = tgtItem["custom"];
                                   if(customAttr){
                                       tgtItem["url"] = link.href;
-                                      // do not provide page instance as the current page instance may be used
                                       await checkSpecificSource(browser, tgtItem, lastCheckDates, checksum_path, save_dir, subfolder_path);
                                   }else{
                                       await saveToFile(tgtItem, link, lastCheckDates, operation_page, checksum_path, save_dir);
                                       handledUrl.push(link.href);
                                   }
                               }
-                          }));
+                          }
                           return lastCheckDates;
                       }
                   };
@@ -343,7 +346,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                           console.log(`failed to get content: ${url}`);
                           resolve(false);
                       }
-                  });
+                  }).catch(reject);
               }else if(ext == "html"){
                 const save_ext = path.extname(save_dir);
                 if(save_ext == "pdf"){
@@ -358,7 +361,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                                           resolve(true);
                                       }
                                       resolve(false);
-                                  });
+                                  }).catch(reject);
                               }else{
                                   resolve(false);
                               }
@@ -371,13 +374,13 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                                       resolve(true);
                                   }
                                   resolve(false);
-                              });
-                          }                            
+                              }).catch(reject);
+                          }
                       }else{
                           console.log(`failed to get content: ${url}`);
                           resolve(false);
                       }
-                  });
+                  }).catch(reject);
                 }else{
                     savePage(save_dir, page).then((result) => {
                         if(result){
@@ -386,7 +389,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                             resolve(true);
                         }
                         resolve(false);
-                      });    
+                      }).catch(reject);
                 }
               }else{
                   fetchArrayBuffer(url).then(({filename, data}) => {
@@ -419,7 +422,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                           console.log(`failed to get content: ${url}`);
                           resolve(false);
                       }
-                  });
+                  }).catch(reject);
               }
           }else if(type == GOTO_LOAD){
               if(checksum_required) {
@@ -430,17 +433,17 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                           resolve(true);
                       }
                       resolve(false);
-                  });
+                  }).catch(reject);
               }else{
                   utils.savePDFWithGoto(save_dir, url, null, page).then((result) => {
                       if(result){
                           utils.update_unique_file(unique_by, uniqueKeyFile, link);
-                          lastCheckDates[url] = today;        
+                          lastCheckDates[url] = today;
                           console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
                           resolve(true);
                       }
                       resolve(false);
-                  });
+                  }).catch(reject);
               }
           }else if(type == LOAD_REPLAGE){
               fetchContent(url).then(html => {
@@ -454,7 +457,7 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                                       resolve(true);
                                   }
                                   resolve(false);
-                              });
+                              }).catch(reject);
                           }else{
                               resolve(false);
                           }
@@ -462,19 +465,51 @@ async function saveToFile(item, link, lastCheckDates, page, checksum_path, save_
                           utils.saveHTMLasPDF(save_dir, html, url).then((result) => {
                               if(result){
                                   utils.update_unique_file(unique_by, uniqueKeyFile, link);
-                                  lastCheckDates[url] = today;        
+                                  lastCheckDates[url] = today;
                                   console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
                                   resolve(true);
                               }else{
                                   resolve(false);
                               }
-                          });
+                          }).catch(reject);
                       }
                   }else{
                       console.log(`failed to get content: ${url}`);
                       resolve(false);
                   }
-              });
+              }).catch(reject);
+          }else if(type == GOTO_DOWNLOAD){
+              if(page == null){
+                  reject(new Error(`goto_download requires a page instance for ${url}`));
+                  return;
+              }
+              // Use fetch inside the browser context to avoid ERR_ABORTED on PDF navigation
+              page.evaluate(async (url) => {
+                  const resp = await fetch(url);
+                  if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                  const buf = await resp.arrayBuffer();
+                  return Array.from(new Uint8Array(buf));
+              }, url)
+                  .then(bytes => {
+                      const data = Buffer.from(bytes);
+                      if(checksum_required){
+                          if(!utils.handleChecksum(uniqueKeyFile, data)){
+                              utils.saveFile(save_dir, data);
+                              lastCheckDates[url] = today;
+                              console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
+                              resolve(true);
+                          }else{
+                              resolve(false);
+                          }
+                      }else{
+                          utils.saveFile(save_dir, data);
+                          utils.update_unique_file(unique_by, uniqueKeyFile, link);
+                          lastCheckDates[url] = today;
+                          console.log(`[${new Date().toLocaleString()}]: saved ${save_dir} for ${url}`);
+                          resolve(true);
+                      }
+                  })
+                  .catch(reject);
           }else{
               console.log(`undefined loading type: ${type} for ${url}`);
               resolve(false);
